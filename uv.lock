@@ -895,7 +895,7 @@ wheels = [
 ]
 
 [[package]]
-name = "st-pypdf-forge"
+name = "st-pdf-foundry"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

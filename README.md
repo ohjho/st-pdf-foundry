@@ -1,6 +1,6 @@
 # PDF Foundry Streamlit App
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://openrouter-model-zoo.streamlit.app)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://pdf-foundry.streamlit.app)
 
 This project compares the different models available on OpenRouter, showcasing their performance and capabilities.
 
@@ -16,4 +16,4 @@ via a download button
 2. add requirements with uv: `uv add streamlit pypdf pymupdf pillow`
 3. use [zed](https://zed.dev/agentic) and Claude Sonnet 4:
   > can you follow the instruction in the readme's "How the App works?" section to build a streamlit app in `streamlit_app.py`?
-4. deploy using Streamlit Cloud
+4. deploy using [Streamlit Cloud](https://share.streamlit.io)
