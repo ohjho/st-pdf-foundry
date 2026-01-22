@@ -177,14 +177,15 @@ def main():
             col1, col2 = st.columns(2)
 
             with col1:
-                tab_imc, tab_flatten, tab_protect = st.tabs(
+                tab_imc, tab_flatten, tab_protect, tab_preview = st.tabs(
                     [
                         ":material/image:",
                         ":material/skillet_cooktop:",
-                        ":material/lock_open",
+                        ":material/lock_open:",
+                        ":material/preview:",
                     ]
                 )
-                with tab_protect:
+                with tab_flatten:
                     st.subheader("🔧 PDF Operations")
 
                     # Flatten option
@@ -381,25 +382,26 @@ def main():
                                     use_container_width=True,
                                 )
 
-            # PDF Preview section
-            st.subheader("👁️ PDF Preview")
+            with tab_preview:
+                # PDF Preview section
+                st.subheader("👁️ PDF Preview")
 
-            # Show first page as preview (if possible)
-            try:
-                first_page = reader.pages[0]
-                if hasattr(first_page, "extract_text"):
-                    text_content = first_page.extract_text()
-                    if text_content.strip():
-                        with st.expander("📖 First Page Text Content"):
-                            st.text_area(
-                                "Text from first page:", text_content, height=200
+                # Show first page as preview (if possible)
+                try:
+                    first_page = reader.pages[0]
+                    if hasattr(first_page, "extract_text"):
+                        text_content = first_page.extract_text()
+                        if text_content.strip():
+                            with st.expander("📖 First Page Text Content"):
+                                st.text_area(
+                                    "Text from first page:", text_content, height=200
+                                )
+                        else:
+                            st.info(
+                                "ℹ️ No extractable text found on the first page (might be image-based)"
                             )
-                    else:
-                        st.info(
-                            "ℹ️ No extractable text found on the first page (might be image-based)"
-                        )
-            except Exception as e:
-                st.warning(f"⚠️ Could not extract preview: {str(e)}")
+                except Exception as e:
+                    st.warning(f"⚠️ Could not extract preview: {str(e)}")
 
         except Exception as e:
             st.error(f"❌ Error reading PDF: {str(e)}")
