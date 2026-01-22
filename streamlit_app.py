@@ -115,7 +115,7 @@ def convert_to_image_pdf(pdf_bytes, dpi=150, get_images: bool = False):
         else:
             # Create a new PDF page from the image with highest quality
             img_buffer = io.BytesIO()
-            img.save(img_buffer, format="PDF", quality=100, optimize=False)
+            img.save(img_buffer, format="PDF", quality=95, optimize=False)
             img_buffer.seek(0)
 
             # Add the image PDF page to our writer
@@ -374,17 +374,30 @@ def main():
                     ):
                         images = st.session_state["page_images"]
                         dpi_info = st.session_state.get("image_dpi", "150")
-                        st.caption(
-                            f'expand the image then right click to "Save Image As..."'
-                        )
 
-                        # Create a grid of images
+                        # Create a grid of images with download buttons
                         cols = st.columns(2)
                         for idx, img in enumerate(images):
                             with cols[idx % 2]:
                                 st.image(
                                     img,
                                     caption=f"Page {idx + 1} ({dpi_info} DPI)",
+                                    use_container_width=True,
+                                )
+
+                                # Create download button for this image
+                                img_buffer = io.BytesIO()
+                                img.save(
+                                    img_buffer, format="PNG", optimize=False, quality=95
+                                )
+                                img_buffer.seek(0)
+
+                                st.download_button(
+                                    label=f"⬇️ Page {idx + 1}",
+                                    data=img_buffer.getvalue(),
+                                    file_name=f"page_{idx + 1:03d}_{dpi_info}dpi.png",
+                                    mime="image/png",
+                                    key=f"img_download_{idx}",
                                     use_container_width=True,
                                 )
 
@@ -420,7 +433,7 @@ def main():
         with st.expander("ℹ️ What can this app do?"):
             st.markdown(
                 """
-            **PyPDF Forge** helps you process PDF files with the following features:
+            **PDF flatpack** helps you process PDF files with the following features:
 
             - **📤 Upload**: Upload any PDF file from your computer
             - **🔄 Flatten**: Remove interactive form fields and flatten the PDF
