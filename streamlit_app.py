@@ -115,7 +115,7 @@ def convert_to_image_pdf(pdf_bytes, dpi=150, get_images: bool = False):
         else:
             # Create a new PDF page from the image with highest quality
             img_buffer = io.BytesIO()
-            img.save(img_buffer, format="PDF", quality=95, optimize=False)
+            img.save(img_buffer, format="PDF", quality=100, optimize=False)
             img_buffer.seek(0)
 
             # Add the image PDF page to our writer
@@ -273,9 +273,10 @@ def main():
 
                     col_img1, col_img2 = st.columns(2)
 
-                    with col_img1:
+                    with col_img2:
                         if st.button(
-                            "🖼️ Generate Images",
+                            "Generate Images",
+                            icon=":material/filter:",
                             help="Extract pages as individual images",
                         ):
                             with st.spinner("Generating images..."):
@@ -290,9 +291,10 @@ def main():
                                 except Exception as e:
                                     st.error(f"❌ Error generating images: {str(e)}")
 
-                    with col_img2:
+                    with col_img1:
                         if st.button(
-                            "🖼️ Convert to Image PDF",
+                            "Convert to Image PDF",
+                            icon=":material/file_save:",
                             help="Convert each page to an image and create a new PDF",
                         ):
                             with st.spinner("Converting pages to images..."):
