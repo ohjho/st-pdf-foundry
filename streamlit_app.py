@@ -78,19 +78,24 @@ def restrict_copying_pdf(
     return output_buffer.getvalue()
 
 
-def convert_to_image_pdf(pdf_bytes, dpi=150):
+def convert_to_image_pdf(pdf_bytes, dpi=150, get_images: bool = False):
     """
     Convert each PDF page to an image and create a new PDF from those images.
 
     Args:
         pdf_bytes: The original PDF bytes
         dpi: Resolution for the image conversion (default: 150 DPI)
+        get_images: If True, return a list of PIL Image objects instead of PDF bytes (default: False)
+
+    Returns:
+        If get_images is False: bytes of the image-based PDF
+        If get_images is True: list of PIL Image objects
     """
     # Open the PDF with PyMuPDF
     pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
 
-    # Create a new PDF writer
-    writer = PdfWriter()
+    images = []
+    writer = PdfWriter() if not get_images else None
 
     for page_num in range(pdf_document.page_count):
         # Get the page
@@ -104,23 +109,30 @@ def convert_to_image_pdf(pdf_bytes, dpi=150):
         img_data = pix.tobytes("png")
         img = Image.open(io.BytesIO(img_data))
 
-        # Create a new PDF page from the image
-        img_buffer = io.BytesIO()
-        img.save(img_buffer, format="PDF")
-        img_buffer.seek(0)
+        if get_images:
+            # Store image in list
+            images.append(img)
+        else:
+            # Create a new PDF page from the image
+            img_buffer = io.BytesIO()
+            img.save(img_buffer, format="PDF")
+            img_buffer.seek(0)
 
-        # Add the image PDF page to our writer
-        img_reader = PdfReader(img_buffer)
-        writer.add_page(img_reader.pages[0])
+            # Add the image PDF page to our writer
+            img_reader = PdfReader(img_buffer)
+            writer.add_page(img_reader.pages[0])
 
     # Close the PyMuPDF document
     pdf_document.close()
 
-    # Create output buffer
-    output_buffer = io.BytesIO()
-    writer.write(output_buffer)
-    output_buffer.seek(0)
-    return output_buffer.getvalue()
+    if get_images:
+        return images
+    else:
+        # Create output buffer
+        output_buffer = io.BytesIO()
+        writer.write(output_buffer)
+        output_buffer.seek(0)
+        return output_buffer.getvalue()
 
 
 def main():
@@ -244,21 +256,45 @@ def main():
                     help="Higher DPI = better quality but larger file size",
                 )
 
-                if st.button(
-                    "🖼️ Convert to Image PDF",
-                    help="Convert each page to an image and create a new PDF",
-                ):
-                    with st.spinner("Converting pages to images..."):
-                        try:
-                            image_pdf = convert_to_image_pdf(pdf_bytes, dpi=image_dpi)
-                            st.session_state["image_pdf"] = image_pdf
-                            st.session_state["image_dpi"] = image_dpi
-                            st.success(
-                                "✅ PDF converted to image-based PDF successfully!"
-                            )
-                            st.info(f"ℹ️ Each page converted to {image_dpi} DPI image")
-                        except Exception as e:
-                            st.error(f"❌ Error converting to image PDF: {str(e)}")
+                col_img1, col_img2 = st.columns(2)
+
+                with col_img1:
+                    if st.button(
+                        "🖼️ Generate Images",
+                        help="Extract pages as individual images",
+                    ):
+                        with st.spinner("Generating images..."):
+                            try:
+                                page_images = convert_to_image_pdf(
+                                    pdf_bytes, dpi=image_dpi, get_images=True
+                                )
+                                st.session_state["page_images"] = page_images
+                                st.session_state["image_dpi"] = image_dpi
+                                st.success("✅ Images generated successfully!")
+                                st.info(f"ℹ️ Generated {len(page_images)} image(s)")
+                            except Exception as e:
+                                st.error(f"❌ Error generating images: {str(e)}")
+
+                with col_img2:
+                    if st.button(
+                        "🖼️ Convert to Image PDF",
+                        help="Convert each page to an image and create a new PDF",
+                    ):
+                        with st.spinner("Converting pages to images..."):
+                            try:
+                                image_pdf = convert_to_image_pdf(
+                                    pdf_bytes, dpi=image_dpi
+                                )
+                                st.session_state["image_pdf"] = image_pdf
+                                st.session_state["image_dpi"] = image_dpi
+                                st.success(
+                                    "✅ PDF converted to image-based PDF successfully!"
+                                )
+                                st.info(
+                                    f"ℹ️ Each page converted to {image_dpi} DPI image"
+                                )
+                            except Exception as e:
+                                st.error(f"❌ Error converting to image PDF: {str(e)}")
 
             with col2:
                 st.subheader("📥 Downloads")
@@ -309,6 +345,25 @@ def main():
                         mime="application/pdf",
                         help=f"PDF with pages converted to {dpi_info} DPI images",
                     )
+
+                # Display generated images if available
+                if "page_images" in st.session_state:
+                    with st.expander(
+                        f"🖼️ Preview Generated Images ({len(st.session_state['page_images'])} page(s))",
+                        expanded=False,
+                    ):
+                        images = st.session_state["page_images"]
+                        dpi_info = st.session_state.get("image_dpi", "150")
+
+                        # Create a grid of images
+                        cols = st.columns(2)
+                        for idx, img in enumerate(images):
+                            with cols[idx % 2]:
+                                st.image(
+                                    img,
+                                    caption=f"Page {idx + 1} ({dpi_info} DPI)",
+                                    use_column_width=True,
+                                )
 
             # PDF Preview section
             st.subheader("👁️ PDF Preview")
