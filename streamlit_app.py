@@ -140,7 +140,7 @@ def main():
         "https://images.seeklogo.com/logo-png/0/3/adobe-pdf-logo-png_seeklogo-3493.png"
     )
     st.set_page_config(
-        page_title="PDF Foundry",
+        page_title="PDF flatpack",
         page_icon=app_icon,
         # page_icon="📄",
         layout="wide",
@@ -148,8 +148,8 @@ def main():
 
     st.logo(app_icon, size="large")
 
-    st.title("PDF Foundry")
-    st.caption("Upload a PDF and transform it with various operations")
+    st.title("PDF flatpack")
+    st.caption("flattening your PDFs")
 
     # Sidebar for file upload
     with st.sidebar:
@@ -177,124 +177,140 @@ def main():
             col1, col2 = st.columns(2)
 
             with col1:
-                st.subheader("🔧 PDF Operations")
-
-                # Flatten option
-                if st.button(
-                    "🔄 Flatten PDF", help="Remove form fields and flatten the PDF"
-                ):
-                    with st.spinner("Flattening PDF..."):
-                        try:
-                            flattened_pdf = flatten_pdf(pdf_bytes)
-                            st.session_state["flattened_pdf"] = flattened_pdf
-                            st.success("✅ PDF flattened successfully!")
-                        except Exception as e:
-                            st.error(f"❌ Error flattening PDF: {str(e)}")
-
-                # Copy protection options
-                st.markdown("#### 🔒 Copy Protection Settings")
-
-                allow_text_selection = st.checkbox(
-                    "Allow text selection and copying",
-                    value=False,
-                    help="Check to allow users to select and copy text from the PDF",
+                tab_imc, tab_flatten, tab_protect = st.tabs(
+                    [
+                        ":material/image:",
+                        ":material/skillet_cooktop:",
+                        ":material/lock_open",
+                    ]
                 )
+                with tab_protect:
+                    st.subheader("🔧 PDF Operations")
 
-                allow_interactive = st.checkbox(
-                    "Allow interactive elements",
-                    value=False,
-                    help="Check to keep links, form fields, and other interactive elements functional",
-                )
-
-                if st.button(
-                    "🔒 Apply Copy Protection",
-                    help="Create a copy-protected version with selected permissions",
-                ):
-                    with st.spinner("Applying copy protection..."):
-                        try:
-                            protected_pdf = restrict_copying_pdf(
-                                pdf_bytes,
-                                allow_interactive=allow_interactive,
-                                allow_text_selection=allow_text_selection,
-                            )
-                            st.session_state["protected_pdf"] = protected_pdf
-                            st.session_state["protection_settings"] = {
-                                "text_selection": allow_text_selection,
-                                "interactive": allow_interactive,
-                            }
-                            st.success("✅ Copy protection applied successfully!")
-
-                            # Show applied settings
-                            settings_info = []
-                            if allow_text_selection:
-                                settings_info.append("✅ Text selection allowed")
-                            else:
-                                settings_info.append("❌ Text selection blocked")
-
-                            if allow_interactive:
-                                settings_info.append("✅ Interactive elements enabled")
-                            else:
-                                settings_info.append("❌ Interactive elements disabled")
-
-                            st.info(
-                                "🔧 Applied settings:\n"
-                                + "\n".join(f"- {setting}" for setting in settings_info)
-                            )
-
-                        except Exception as e:
-                            st.error(f"❌ Error applying copy protection: {str(e)}")
-
-                # Image conversion option
-                st.markdown("#### 🖼️ Image Conversion")
-
-                image_dpi = st.slider(
-                    "Image Quality (DPI)",
-                    min_value=72,
-                    max_value=300,
-                    value=150,
-                    step=25,
-                    help="Higher DPI = better quality but larger file size",
-                )
-
-                col_img1, col_img2 = st.columns(2)
-
-                with col_img1:
+                    # Flatten option
                     if st.button(
-                        "🖼️ Generate Images",
-                        help="Extract pages as individual images",
+                        "🔄 Flatten PDF", help="Remove form fields and flatten the PDF"
                     ):
-                        with st.spinner("Generating images..."):
+                        with st.spinner("Flattening PDF..."):
                             try:
-                                page_images = convert_to_image_pdf(
-                                    pdf_bytes, dpi=image_dpi, get_images=True
-                                )
-                                st.session_state["page_images"] = page_images
-                                st.session_state["image_dpi"] = image_dpi
-                                st.success("✅ Images generated successfully!")
-                                st.info(f"ℹ️ Generated {len(page_images)} image(s)")
+                                flattened_pdf = flatten_pdf(pdf_bytes)
+                                st.session_state["flattened_pdf"] = flattened_pdf
+                                st.success("✅ PDF flattened successfully!")
                             except Exception as e:
-                                st.error(f"❌ Error generating images: {str(e)}")
+                                st.error(f"❌ Error flattening PDF: {str(e)}")
+                with tab_protect:
+                    # Copy protection options
+                    st.markdown("#### 🔒 Copy Protection Settings")
 
-                with col_img2:
+                    allow_text_selection = st.checkbox(
+                        "Allow text selection and copying",
+                        value=False,
+                        help="Check to allow users to select and copy text from the PDF",
+                    )
+
+                    allow_interactive = st.checkbox(
+                        "Allow interactive elements",
+                        value=False,
+                        help="Check to keep links, form fields, and other interactive elements functional",
+                    )
+
                     if st.button(
-                        "🖼️ Convert to Image PDF",
-                        help="Convert each page to an image and create a new PDF",
+                        "🔒 Apply Copy Protection",
+                        help="Create a copy-protected version with selected permissions",
                     ):
-                        with st.spinner("Converting pages to images..."):
+                        with st.spinner("Applying copy protection..."):
                             try:
-                                image_pdf = convert_to_image_pdf(
-                                    pdf_bytes, dpi=image_dpi
+                                protected_pdf = restrict_copying_pdf(
+                                    pdf_bytes,
+                                    allow_interactive=allow_interactive,
+                                    allow_text_selection=allow_text_selection,
                                 )
-                                st.session_state["image_pdf"] = image_pdf
-                                st.session_state["image_dpi"] = image_dpi
-                                st.success(
-                                    "✅ PDF converted to image-based PDF successfully!"
-                                )
+                                st.session_state["protected_pdf"] = protected_pdf
+                                st.session_state["protection_settings"] = {
+                                    "text_selection": allow_text_selection,
+                                    "interactive": allow_interactive,
+                                }
+                                st.success("✅ Copy protection applied successfully!")
+
+                                # Show applied settings
+                                settings_info = []
+                                if allow_text_selection:
+                                    settings_info.append("✅ Text selection allowed")
+                                else:
+                                    settings_info.append("❌ Text selection blocked")
+
+                                if allow_interactive:
+                                    settings_info.append(
+                                        "✅ Interactive elements enabled"
+                                    )
+                                else:
+                                    settings_info.append(
+                                        "❌ Interactive elements disabled"
+                                    )
+
                                 st.info(
-                                    f"ℹ️ Each page converted to {image_dpi} DPI image"
+                                    "🔧 Applied settings:\n"
+                                    + "\n".join(
+                                        f"- {setting}" for setting in settings_info
+                                    )
                                 )
+
                             except Exception as e:
-                                st.error(f"❌ Error converting to image PDF: {str(e)}")
+                                st.error(f"❌ Error applying copy protection: {str(e)}")
+                with tab_imc:
+                    # Image conversion option
+                    st.markdown("#### 🖼️ Image Conversion")
+
+                    image_dpi = st.slider(
+                        "Image Quality (DPI)",
+                        min_value=72,
+                        max_value=300,
+                        value=150,
+                        step=25,
+                        help="Higher DPI = better quality but larger file size",
+                    )
+
+                    col_img1, col_img2 = st.columns(2)
+
+                    with col_img1:
+                        if st.button(
+                            "🖼️ Generate Images",
+                            help="Extract pages as individual images",
+                        ):
+                            with st.spinner("Generating images..."):
+                                try:
+                                    page_images = convert_to_image_pdf(
+                                        pdf_bytes, dpi=image_dpi, get_images=True
+                                    )
+                                    st.session_state["page_images"] = page_images
+                                    st.session_state["image_dpi"] = image_dpi
+                                    st.success("✅ Images generated successfully!")
+                                    st.info(f"ℹ️ Generated {len(page_images)} image(s)")
+                                except Exception as e:
+                                    st.error(f"❌ Error generating images: {str(e)}")
+
+                    with col_img2:
+                        if st.button(
+                            "🖼️ Convert to Image PDF",
+                            help="Convert each page to an image and create a new PDF",
+                        ):
+                            with st.spinner("Converting pages to images..."):
+                                try:
+                                    image_pdf = convert_to_image_pdf(
+                                        pdf_bytes, dpi=image_dpi
+                                    )
+                                    st.session_state["image_pdf"] = image_pdf
+                                    st.session_state["image_dpi"] = image_dpi
+                                    st.success(
+                                        "✅ PDF converted to image-based PDF successfully!"
+                                    )
+                                    st.info(
+                                        f"ℹ️ Each page converted to {image_dpi} DPI image"
+                                    )
+                                except Exception as e:
+                                    st.error(
+                                        f"❌ Error converting to image PDF: {str(e)}"
+                                    )
 
             with col2:
                 st.subheader("📥 Downloads")
@@ -362,7 +378,7 @@ def main():
                                 st.image(
                                     img,
                                     caption=f"Page {idx + 1} ({dpi_info} DPI)",
-                                    use_column_width=True,
+                                    use_container_width=True,
                                 )
 
             # PDF Preview section
