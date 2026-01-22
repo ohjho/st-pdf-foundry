@@ -105,7 +105,7 @@ def convert_to_image_pdf(pdf_bytes, dpi=150, get_images: bool = False):
         mat = fitz.Matrix(dpi / 72, dpi / 72)  # Scale factor for DPI
         pix = page.get_pixmap(matrix=mat)
 
-        # Convert to PIL Image
+        # Convert to PIL Image using PNG format (lossless)
         img_data = pix.tobytes("png")
         img = Image.open(io.BytesIO(img_data))
 
@@ -113,9 +113,9 @@ def convert_to_image_pdf(pdf_bytes, dpi=150, get_images: bool = False):
             # Store image in list
             images.append(img)
         else:
-            # Create a new PDF page from the image
+            # Create a new PDF page from the image with highest quality
             img_buffer = io.BytesIO()
-            img.save(img_buffer, format="PDF")
+            img.save(img_buffer, format="PDF", quality=95, optimize=False)
             img_buffer.seek(0)
 
             # Add the image PDF page to our writer
@@ -264,7 +264,7 @@ def main():
 
                     image_dpi = st.slider(
                         "Image Quality (DPI)",
-                        min_value=72,
+                        min_value=50,
                         max_value=300,
                         value=150,
                         step=25,
@@ -366,11 +366,15 @@ def main():
                 # Display generated images if available
                 if "page_images" in st.session_state:
                     with st.expander(
-                        f"🖼️ Preview Generated Images ({len(st.session_state['page_images'])} page(s))",
+                        f"Generated Images Gallery({len(st.session_state['page_images'])} page(s))",
+                        icon="🖼️",
                         expanded=False,
                     ):
                         images = st.session_state["page_images"]
                         dpi_info = st.session_state.get("image_dpi", "150")
+                        st.caption(
+                            f'expand the image then right click to "Save Image As..."'
+                        )
 
                         # Create a grid of images
                         cols = st.columns(2)
