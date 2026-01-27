@@ -380,10 +380,10 @@ def main():
                         col_select1, col_select2, col_select3 = st.columns(3)
 
                         with col_select1:
-                            pages_to_show = st.number_input(
+                            pages_to_show = st.slider(
                                 "Pages to display",
                                 min_value=1,
-                                max_value=total_pages,
+                                max_value=6,
                                 value=min(4, total_pages),
                                 step=1,
                                 help="Select how many pages to show in the gallery",
