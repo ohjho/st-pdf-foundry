@@ -374,11 +374,46 @@ def main():
                     ):
                         images = st.session_state["page_images"]
                         dpi_info = st.session_state.get("image_dpi", "150")
+                        total_pages = len(images)
+
+                        # Page selection controls
+                        col_select1, col_select2, col_select3 = st.columns(3)
+
+                        with col_select1:
+                            pages_to_show = st.number_input(
+                                "Pages to display",
+                                min_value=1,
+                                max_value=total_pages,
+                                value=min(4, total_pages),
+                                step=1,
+                                help="Select how many pages to show in the gallery",
+                            )
+
+                        with col_select2:
+                            start_page = st.number_input(
+                                "Start from page",
+                                min_value=1,
+                                max_value=total_pages,
+                                value=1,
+                                step=1,
+                                help="Which page to start displaying from",
+                            )
+
+                        with col_select3:
+                            st.info(
+                                f"📊 Showing {min(pages_to_show, total_pages - start_page + 1)} of {total_pages} pages"
+                            )
+
+                        # Calculate page range
+                        start_idx = start_page - 1
+                        end_idx = min(start_idx + pages_to_show, total_pages)
+                        pages_to_display = range(start_idx, end_idx)
 
                         # Create a grid of images with download buttons
                         cols = st.columns(2)
-                        for idx, img in enumerate(images):
-                            with cols[idx % 2]:
+                        for display_idx, idx in enumerate(pages_to_display):
+                            img = images[idx]
+                            with cols[display_idx % 2]:
                                 st.image(
                                     img,
                                     caption=f"Page {idx + 1} ({dpi_info} DPI)",
